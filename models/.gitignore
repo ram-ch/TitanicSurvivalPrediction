@@ -1,1 +1,11 @@
 /model.bin
+/dt.bin
+/gb.bin
+/knn.bin
+/logistic.bin
+/log_reg.bin
+/nn.bin
+/rf.bin
+/sgd.bin
+/svm.bin
+/xgb.bin

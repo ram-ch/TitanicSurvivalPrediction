@@ -1,0 +1,4 @@
+outs:
+- md5: 161b739aa280718a1798d890fbd2aade
+  size: 1825264
+  path: rf.bin

@@ -1,0 +1,4 @@
+outs:
+- md5: a3c0e8482d27c479ee2135bc637ea27d
+  size: 51686
+  path: svm.bin

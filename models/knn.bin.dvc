@@ -1,0 +1,4 @@
+outs:
+- md5: 9f1ed05db663d548657b22873c242db9
+  size: 120834
+  path: knn.bin

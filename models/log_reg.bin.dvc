@@ -1,0 +1,4 @@
+outs:
+- md5: 7f969bacc08214f0560492f44e207906
+  size: 998
+  path: log_reg.bin

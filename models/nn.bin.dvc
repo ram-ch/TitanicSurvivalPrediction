@@ -1,0 +1,4 @@
+outs:
+- md5: 138bf0955e0f91a7e7c721167b408847
+  size: 34886
+  path: nn.bin
