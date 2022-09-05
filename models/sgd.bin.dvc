@@ -1,0 +1,4 @@
+outs:
+- md5: 7ba92869c825a4934864a2ddafb213c6
+  size: 1083
+  path: sgd.bin

@@ -1,0 +1,6 @@
+RAW_TRAIN_DATA='data/train.csv'
+PROCESSED_TRAIN_DATA='data/train_ohe.csv'
+RAW_TEST_DATA='data/test.csv'
+TRAINING_DATA='data/train_folds.csv'
+MODEL_OUTPUT='models/'
+PREPROCESSOR_PKL='src/preprocessor_pkl'

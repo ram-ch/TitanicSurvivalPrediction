@@ -1,0 +1,8 @@
+/train.csv
+/train_le_processed.csv
+/train_ohe_processed.csv
+/train_le.csv
+/train_ohe.csv
+/test.csv
+/mlruns/*
+/test_le.csv
