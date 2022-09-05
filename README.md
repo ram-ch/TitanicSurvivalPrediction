@@ -19,7 +19,7 @@ other approache could be using a RDBMS for data storage:
 
 ## Notebooks   
 The notebooks contain the basic EDA. please refer [EDA](https://nbviewer.org/github/ram-ch/TitanicSurvivalPrediction/blob/develop/notebook/1_EDA_DataPreprocessing.ipynb)   
-
+  
 
 
 ## Data Preprocessing  
@@ -29,20 +29,35 @@ Highlights from the preprocessing
     * Embarked - unknown  
     * Fare - mean of the train Fare feature
     * Sex - unknown
-* Scaling   
-    * Standard scaling for Age and Fare   
+* New features
+    * Feature Title created from Name  
+    * Feature IsAlone is created from the Family size
+    * Feature Pclass_Age created from Pclass and Age 
+    * Feature Fare_Embarked from Fare and Embarked
 * Encoding
-    * One hot encoding for Pclass,SibSp,Parch,Embarked,Sex
+    * Features Age and Fare are binned in to categories and then label encoded
+    * All the other Features are label encoded
 * Drop columns  
-    * PassengerId,Ticket,Name,Cabin
+    * PassengerId,Ticket,Cabin
 * Feature importance and feature selection
     * Tested XGBoost feature importance for identifying the important features
 
-Note: Features Name and cabin can be further engineered for better accuracy   
+Note: Features cabin and ticket can be further engineered for better accuracy. The preprocessing of training and test data is done separately. This helps in performing inference on a single data point or batch of samples without reprocessing the training data.   
 
-## 
 
 ## Experimentation   
 I have used [MLflow](https://mlflow.org/) for maintaining a track of different experiments run. Importants information like model name, parameters and evaluation metrics are logged to mlflow. The results can be viewed on a UI by running the below command    
 `mlflow ui`    
 
+## Hyperaparameter Tuning   
+Performed GridsearchCV for Random Forest and XGboost
+Used Optuna (alternative for GridSearch) for hyperparameter tuning    
+**TODO** Need to add the optuna scripts here   
+
+**TODO** Need to add the EDA scripts here  
+**TODO** Model interpretation   
+**TODO** Explore and identify tools to get model interpretability   
+**TODO** Write a flask app to take a data point and respond with the probability of survival   
+**TODO** Use github action for creating a release   
+**TODO** Unit testing in data scince and integration with github actions   
+**TODO** Explore options for deployment (AWS,Azure)
