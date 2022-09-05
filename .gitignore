@@ -1,2 +1,5 @@
 .vscode
 tmp
+mlruns
+src/__pychache__*.pyc
+src/*.pyc

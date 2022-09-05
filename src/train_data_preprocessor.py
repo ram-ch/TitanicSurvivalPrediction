@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 from pickle import dump,load
 from sklearn import preprocessing
-from sklearn import preprocessing
 from sklearn import model_selection
 
 def null_value_checker(df):
@@ -22,14 +21,12 @@ def null_value_checker(df):
 def null_imputer(df,null_cols):
     # impute missing values
     for col in null_cols:
-        if col=='Age':   
-            train_mean_age=29.69911764705882
-            df['Age']=df['Age'].fillna(value=train_mean_age)    
+        if col=='Age':    
+            df['Age']=df['Age'].fillna(value=df['Age'].mean())    
         elif col=='Embarked':
             df['Embarked']=df['Embarked'].fillna(value='unknown')    
         elif col=='Fare':
-            train_mean_fare=32.204207968574636
-            df['Fare']=df['Fare'].fillna(value=train_mean_fare)
+            df['Fare']=df['Fare'].fillna(value=df['Fare'].mean())
         elif col=='Sex':
             df['Sex']=df['Sex'].fillna(value='unknown')
     return df
@@ -37,30 +34,33 @@ def null_imputer(df,null_cols):
 def ohe_encoder(col,df):     
     transformed_df=pd.DataFrame()
     ohe=preprocessing.OneHotEncoder()
-    # load the obj to pkl
-    with open(f"src/preprocessor_pkl/ohe_{col}.pkl", "rb") as input_file:
-        ohe = load(input_file) 
+    # fit to train
+    ohe.fit(df[[col]])            
     transformed = ohe.transform(df[[col]])
+    # save the obj to pkl
+    dump(ohe, open(f'{config.PREPROCESSOR_PKL}/ohe_{col}.pkl', 'wb'))    
     transformed_df[ohe.categories_[0]] = transformed.toarray()    
     for col in transformed_df:
         transformed_df[col]=transformed_df[col].astype(int)
     return transformed_df
 
 def label_encoder(col,df):
-    # load the obj to pkl
-    with open(f"src/preprocessor_pkl/le_{col}.pkl", "rb") as input_file:
-        le = load(input_file) 
-    # transform the test     
+    le=preprocessing.LabelEncoder()
+    # fit to train
+    le.fit(df[[col]])            
     df[col] = le.transform(df[[col]])
+    # save the obj to pkl
+    dump(le, open(f'{config.PREPROCESSOR_PKL}/le_{col}.pkl', 'wb'))    
     df[col]=df[col].astype(int)
     return df
 
 
 def scaler(col,df):
     scaler=preprocessing.StandardScaler()
-    with open(f"src/preprocessor_pkl/sclr_{col}.pkl", "rb") as input_file:
-        scaler = load(input_file) 
+    scaler.fit(df[[col]])
     df[col]=scaler.transform(df[[col]])
+    # save the obj to pkl
+    dump(scaler, open(f'{config.PREPROCESSOR_PKL}/sclr_{col}.pkl', 'wb'))    
     return df
 
 def name_feature(df):
@@ -106,61 +106,78 @@ def age_feature(df):
     df['Age'] = df['Age'].astype(int)
     return df
 
+def create_folds(df):
+    df['kfold']=-1
+    df=df.sample(frac=1).reset_index(drop=True)    
+    kf=model_selection.KFold(n_splits=5)
+    for fold,(trn_,val_) in enumerate(kf.split(X=df)):
+        df.loc[val_, 'kfold']=fold    
+    for i in range(5):
+        print(f"Fold: {i} | {len(df['kfold']==i)}")
+    return df
+
 
 def run():
     """
     Method performs the steps to load data,preprocessing,kfold split,save    
     """
-    # 1.Load data
-    test_data=pd.read_csv("data/test.csv")
-    test_data=test_data.drop(['PassengerId','Ticket','Cabin'],axis=1)
+    # Load data
+    train_data=pd.read_csv(config.RAW_TRAIN_DATA)
+    train_data=train_data.drop(['PassengerId','Ticket','Cabin'],axis=1)
        
-    # 2. check for nulls  & impute - Pclass=unknown,Sex=unknown,Age=mean of train, Embarked=unknown
-    null_cols=null_value_checker(test_data)
-    test_data=null_imputer(test_data,null_cols)
-    null_cols=null_value_checker(test_data)
+    # check for nulls  & impute - Pclass=unknown,Sex=unknown,Age=mean of train, Embarked=unknown
+    null_cols=null_value_checker(train_data)
+    train_data=null_imputer(train_data,null_cols)
+    null_cols=null_value_checker(train_data)
     if len(null_cols)==0:
         print("After imputation: No Null")
     
     # Recreate name feature
-    test_data=name_feature(test_data)
-    test_data=test_data.drop(['Name'],axis=1)
-
+    train_data=name_feature(train_data)
+    train_data=train_data.drop(['Name'],axis=1)
 
     # Create alone or not
-    test_data=family_feature(test_data)
-    test_data=test_data.drop(['SibSp','Parch','FamilySize'],axis=1)   
-
+    train_data=family_feature(train_data)
+    train_data=train_data.drop(['SibSp','Parch','FamilySize'],axis=1)    
+    
     # create fare bands
-    test_data=fare_feature(test_data)
+    train_data=fare_feature(train_data)
 
     # create age bands
-    test_data=age_feature(test_data)    
+    train_data=age_feature(train_data)    
 
     # adding prefix to column values
     for col in ['Pclass','Fare','Embarked','Title']:
-        test_data[col] = f'{col}_' + test_data[col].astype(str)     
+        train_data[col] = f'{col}_' + train_data[col].astype(str)    
 
-    # # OHE
+    
+    # OHE
     # for col in ['Pclass','Sex','Fare','Embarked','Title']:   
-    #     transformed=ohe_encoder(col,test_data)
-    #     test_data=pd.concat([test_data,transformed], axis=1)
-    #     test_data.drop(col,axis=1,inplace=True)
-
+    #     transformed=ohe_encoder(col,train_data)
+    #     train_data=pd.concat([train_data,transformed], axis=1)
+    #     train_data.drop(col,axis=1,inplace=True)
+    
     # LE
     for col in ['Pclass','Sex','Fare','Embarked','Title']:   
-        test_data=label_encoder(col,test_data)
+        train_data=label_encoder(col,train_data)
+    
+    # new feature
+    train_data['Age_Class'] = train_data.Age * train_data.Pclass
 
     # new feature
-    test_data['Age_Class'] = test_data.Age * test_data.Pclass
+    train_data['Fare_Embarked'] = train_data.Fare * train_data.Embarked
 
-    # new feature
-    test_data['Fare_Embarked'] = test_data.Fare * test_data.Embarked
-        
-    # 8. save file
-    test_data.to_csv('data/test_le.csv',index=False)
-    print(test_data.head())
-    # return
+    # rearrage column
+    surv=train_data.pop('Survived')
+    train_data['Survived']=surv
+
+    # create folds
+    # train_data=create_folds(train_data)
+
+    # save file
+    train_data.to_csv('data/train_le.csv',index=False)
+    
+    return
 
 if __name__=='__main__':
     run()
